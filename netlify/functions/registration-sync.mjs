@@ -25,9 +25,10 @@ export default async function handler(request) {
       }
     );
 
-    return Response.json({
-      status: response.ok ? "connected" : "connection_failed",
-    });
+   return Response.json({
+  status: response.ok ? "connected" : "connection_failed",
+  http_status: response.status
+});
   } catch {
     return Response.json(
       { status: "connection_failed" },

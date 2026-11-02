@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 const json=(status,data)=>({statusCode:status,headers:{'content-type':'application/json','cache-control':'no-store','access-control-allow-origin':'same-origin'},body:JSON.stringify(data)});
-const teams=['freshman','sophomore','jv','varsity'];
-const folder='maine-south-football-2026';
+const teams=['freshman','sophomore','varsity'];
+const folder='maine-south-football-2027';
 export async function handler(event){
  try{
  const env=process.env; const {CLOUDINARY_CLOUD_NAME:cloud,CLOUDINARY_API_KEY:key,CLOUDINARY_API_SECRET:secret,ADMIN_TOKEN:admin}=env;
@@ -15,22 +15,22 @@ export async function handler(event){
  if(action==='list' && event.httpMethod==='GET'){
   const response=await fetch(`https://api.cloudinary.com/v1_1/${cloud}/resources/search`,{method:'POST',headers:{authorization:auth,'content-type':'application/json'},body:JSON.stringify({expression:`asset_folder="${folder}" AND resource_type=image`,max_results:500,sort_by:[{created_at:'desc'}],with_field:['context','tags']})});
   const result=await response.json();if(!response.ok)return json(502,{error:'Gallery could not load.'});
-  return json(200,{photos:(result.resources||[]).filter(x=>teams.some(t=>(x.tags||[]).includes('ms2026_'+t))).map(x=>({id:x.public_id,url:x.secure_url,team:teams.find(t=>(x.tags||[]).includes('ms2026_'+t)),created:x.created_at})),more:!!result.next_cursor});
+  return json(200,{photos:(result.resources||[]).filter(x=>teams.some(t=>(x.tags||[]).includes('ms2027_'+t))).map(x=>({id:x.public_id,url:x.secure_url,team:teams.find(t=>(x.tags||[]).includes('ms2027_'+t)),created:x.created_at})),more:!!result.next_cursor});
  }
  if(event.httpMethod!=='POST')return json(405,{error:'Method not allowed'});
  const data=JSON.parse(event.body||'{}');
  if(action==='sign-upload'){
-  if(env.UPLOADS_ENABLED==='false')return json(403,{error:'Uploads are currently disabled.'});
+  if(env.UPLOADS_ENABLED!=='true')return json(403,{error:'Uploads are currently disabled.'});
   if(!teams.includes(data.team))return json(400,{error:'Invalid team.'});
-  const params={timestamp:Math.floor(Date.now()/1000),upload_preset:'maine_south_football_2026',asset_folder:folder,tags:'ms2026_'+data.team};
+  const params={timestamp:Math.floor(Date.now()/1000),asset_folder:folder,tags:'ms2027_'+data.team};
   const sign=Object.keys(params).sort().map(k=>`${k}=${params[k]}`).join('&');
   const signature=crypto.createHash('sha1').update(sign+secret).digest('hex');
   return json(200,{cloud,apiKey:key,params,signature});
  }
  if(action==='upload'){
-  if(env.UPLOADS_ENABLED==='false')return json(403,{error:'Uploads are currently disabled.'});
+  if(env.UPLOADS_ENABLED!=='true')return json(403,{error:'Uploads are currently disabled.'});
   if(!teams.includes(data.team)||typeof data.image!=='string'||data.image.length>9_000_000||!/^data:image\/(jpeg|png|webp|heic|heif);base64,/.test(data.image))return json(400,{error:'Invalid photo, format, or file size.'});
-  const params={timestamp:Math.floor(Date.now()/1000),upload_preset:'maine_south_football_2026',asset_folder:folder,tags:'ms2026_'+data.team};
+  const params={timestamp:Math.floor(Date.now()/1000),asset_folder:folder,tags:'ms2027_'+data.team};
   const sign=Object.keys(params).sort().map(k=>`${k}=${params[k]}`).join('&');
   const signature=crypto.createHash('sha1').update(sign+secret).digest('hex');
   const form=new URLSearchParams({...params,api_key:key,signature,file:data.image});
@@ -38,6 +38,8 @@ export async function handler(event){
   if(!r.ok)return json(502,{error:'Upload failed. Check preset settings and try again.'});return json(200,{ok:true,id:out.public_id});
  }
  if(action==='delete'){
+  // Organizer deletion is disabled until Supabase committee-role authorization is connected.
+  return json(403,{error:'Organizer deletion is not yet enabled.'});
   if(!admin||event.headers['x-admin-token']!==admin)return json(403,{error:'Invalid organizer token.'});
   if(typeof data.id!=='string'||data.id.length>250)return json(400,{error:'Invalid photo ID.'});
   const timestamp=Math.floor(Date.now()/1000);const signature=crypto.createHash('sha1').update(`public_id=${data.id}&timestamp=${timestamp}`+secret).digest('hex');

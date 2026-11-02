@@ -99,8 +99,8 @@ export default async function handler(request) {
     separate_seating: data.separate_seating || null,
     other_notes: data.other_notes || null,
     estimated_total: 47 * (data.players.length + data.adult_count),
-    payment_status: "unpaid",
-    registration_status: "pending"
+    payment_status: "not_enabled",
+registration_status: "test"
   };
 
   try {

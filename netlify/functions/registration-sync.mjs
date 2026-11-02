@@ -19,9 +19,8 @@ export default async function handler(request) {
       `${url}/rest/v1/banquet_registrations?select=id&limit=0`,
       {
         headers: {
-          apikey: key,
-          Authorization: `Bearer ${key}`,
-        },
+  apikey: key,
+},
       }
     );
 

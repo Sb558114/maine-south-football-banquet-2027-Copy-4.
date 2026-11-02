@@ -14,6 +14,7 @@ export async function handler(event){
  }
  if(action==='list' && event.httpMethod==='GET'){
   const response=await fetch(`https://api.cloudinary.com/v1_1/${cloud}/resources/search`,{method:'POST',headers:{authorization:auth,'content-type':'application/json'},body:JSON.stringify({expression:`asset_folder="${folder}" AND resource_type=image`,max_results:500,sort_by:[{created_at:'desc'}],with_field:['context','tags']})});
+  console.log('Gallery search status:', response.status);
   const result=await response.json();if(!response.ok)return json(502,{error:'Gallery could not load.'});
   return json(200,{photos:(result.resources||[]).filter(x=>teams.some(t=>(x.tags||[]).includes('ms2027_'+t))).map(x=>({id:x.public_id,url:x.secure_url,team:teams.find(t=>(x.tags||[]).includes('ms2027_'+t)),created:x.created_at})),more:!!result.next_cursor});
  }

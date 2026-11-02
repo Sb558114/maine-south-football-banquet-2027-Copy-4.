@@ -35,7 +35,13 @@ export async function handler(event){
   const signature=crypto.createHash('sha1').update(sign+secret).digest('hex');
   const form=new URLSearchParams({...params,api_key:key,signature,file:data.image});
   const r=await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`,{method:'POST',body:form});const out=await r.json();
-  if(!r.ok)return json(502,{error:'Upload failed. Check preset settings and try again.'});return json(200,{ok:true,id:out.public_id});
+  
+if (!r.ok) {
+  console.error('Cloudinary upload failed:', r.status, JSON.stringify(out?.error || { message: 'No error details returned' }));
+  return json(502, { error: 'Upload failed. Check preset settings and try again.' });
+}
+return json(200, { ok: true, id: out.public_id });
+
  }
  if(action==='delete'){
   // Organizer deletion is disabled until Supabase committee-role authorization is connected.

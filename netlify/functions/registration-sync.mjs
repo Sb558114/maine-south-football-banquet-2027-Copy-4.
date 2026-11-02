@@ -24,9 +24,12 @@ export default async function handler(request) {
       }
     );
 
-   return Response.json({
+   const error = response.ok ? null : await response.json().catch(() => null);
+
+return Response.json({
   status: response.ok ? "connected" : "connection_failed",
-  http_status: response.status
+  http_status: response.status,
+  error_code: error?.code ?? null
 });
   } catch {
     return Response.json(

@@ -40,7 +40,7 @@ nav{flex-wrap:wrap;justify-content:flex-end}
 <label class="field"><span>People who should not sit together (optional)</span><textarea name="separate" rows="3" placeholder="Names only; no explanation needed"></textarea></label>
 <label class="field"><span>Other accommodations or seating notes (optional)</span><textarea name="notes" rows="2"></textarea></label>
 <h2>3. Review & payment</h2>
-<div class="notice"><strong>Proposed pricing:</strong> $47 per adult. Players complimentary (pending final confirmation). No payment is collected in this demo.</div>
+<div class="notice"><strong>Proposed pricing:</strong> $47 per attendee (adult or player). Adults and players are each $47 (proposed), with the same dinner menu. No payment is collected in this demo.</div>
 <div style="display:flex;justify-content:space-between;align-items:center;margin:22px 0"><strong>Estimated total</strong><strong id="total" style="font-size:32px">$94.00</strong></div>
 <p id="validation" role="status" aria-live="polite" class="note"></p>
 <button class="btn primary" type="submit">Preview registration summary</button>
@@ -54,7 +54,7 @@ function count(el){return Number(el.value);}
 function update(){
  const a=count(adults),p=count(players),v=count(vegetarian);
  const valid=[a,p,v].every(n=>Number.isInteger(n)&&n>=0)&&a<=20&&p<=20&&v<=40&&v<=a+p&&a+p>0;
- total.textContent=valid?'$'+(a*47).toFixed(2):'—';
+ total.textContent=valid?'$'+((a+p)*47).toFixed(2):'—';
  status.textContent=valid?'': 'Check attendance counts: use whole numbers, at least one attendee, and no more vegetarian meals than attendees.';
  summary.hidden=true;
  return valid;
@@ -70,7 +70,7 @@ form.addEventListener('submit',function(e){
  ['Adults',count(adults)],['Players',count(players)],['Vegetarian meals',count(vegetarian)],
  ['Preferred seating',data.get('friends')||'None entered'],
  ['Separate seating',data.get('separate')||'None entered'],
- ['Estimated payment','$'+(count(adults)*47).toFixed(2)]
+ ['Estimated payment','$'+((count(adults)+count(players))*47).toFixed(2)]
  ];
  for(const [label,value] of lines){const p=document.createElement('p');const b=document.createElement('strong');b.textContent=label+': ';p.append(b,document.createTextNode(String(value)));summary.appendChild(p);}
  const note=document.createElement('p');note.textContent='No registration or payment has been recorded. This is a browser-only preview.';summary.appendChild(note);

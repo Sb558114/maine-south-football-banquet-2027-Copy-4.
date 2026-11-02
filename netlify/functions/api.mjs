@@ -86,6 +86,16 @@ export async function handler(event) {
         });
 
         assets.push(...(Array.isArray(data.resources) ? data.resources : []));
+        console.log('Folder listing:', {
+  count: data.resources?.length,
+  firstAsset: data.resources?.[0]
+    ? {
+        id: data.resources[0].public_id,
+        tags: data.resources[0].tags,
+        folder: data.resources[0].asset_folder
+      }
+    : null
+});
         cursor = data.next_cursor;
         if (!cursor) break;
       }

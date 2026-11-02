@@ -30,19 +30,34 @@ export async function handler(event){
  if(action==='upload'){
   if(env.UPLOADS_ENABLED!=='true')return json(403,{error:'Uploads are currently disabled.'});
   if(!teams.includes(data.team)||typeof data.image!=='string'||data.image.length>9_000_000||!/^data:image\/(jpeg|png|webp|heic|heif);base64,/.test(data.image))return json(400,{error:'Invalid photo, format, or file size.'});
-  const params={timestamp:Math.floor(Date.now()/1000),asset_folder:folder,tags:'ms2027_'+data.team};
-  const sign=Object.keys(params).sort().map(k=>`${k}=${params[k]}`).join('&');
-  const signature=crypto.createHash('sha1').update(sign+secret).digest('hex');
-  const form=new URLSearchParams({...params,api_key:key,signature,file:data.image});
-  const r=await fetch(`https://api.cloudinary.com/v1_1/${cloud}/image/upload`,{method:'POST',body:form});const out=await r.json();
   
-if (!r.ok) {
-  console.error('Cloudinary upload failed:', r.status, JSON.stringify(out?.error || { message: 'No error details returned' }));
-  return json(502, { error: 'Upload failed. Check preset settings and try again.' });
-}
-return json(200, { ok: true, id: out.public_id });
+  const form = new URLSearchParams({
+    upload_preset: 'maine_south_2027',
+    tags: 'ms2027_' + data.team,
+    file: data.image
+  });
 
+  const r = await fetch(
+    `https://api.cloudinary.com/v1_1/${cloud}/image/upload`,
+    { method: 'POST', body: form }
+  );
+
+  const out = await r.json();
+
+  if (!r.ok) {
+    console.error(
+      'Cloudinary upload failed:',
+      r.status,
+      JSON.stringify(out.error || {})
+    );
+    return json(502, {
+      error: 'Photo upload failed. Please try again.'
+    });
+  }
+
+  return json(200, { ok: true, id: out.public_id });
  }
+
  if(action==='delete'){
   // Organizer deletion is disabled until Supabase committee-role authorization is connected.
   return json(403,{error:'Organizer deletion is not yet enabled.'});
